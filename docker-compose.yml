@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+  frontend:
+    container_name: mixing-valve
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - 3001:3000
+    volumes:
+      - ./frontend:/usr/src/app/frontend
+    environment:
+      - WDS_SOCKET_PORT=0
+    restart: always
+    
+
