@@ -18,26 +18,33 @@ sudo apt-get install -y build-essential
 sudo npm install npx -g
 ```
 
-### create-react-app
-```bash
-npx create-react-app frontend
-```
-
 </br>
 
 ## Docke container run
+
+### clone this repository
+```bash
+git clone https://github.com/jis-team/mixing-valve.git
+```
 
 ### cd project directory
 ```bash
 cd frontend
 ```
 
+### npm install
+```bash
+npm install
+```
+
 ### image build
+- check port number in Dockerfile
 ```bash
 docker build -t mixing-valve-frontend-image .
 ```
 
 ### container run
+- check port number in Dockerfile
 ```bash
-docker run -dit --name mixing-valve -p 3000:3000 -v ${PWD}:/usr/src/app/frontend mixing-valve-frontend-image
+docker run -dit --name mixing-valve -p 3001:3000 -v ${PWD}:/usr/src/app/frontend -e .env mixing-valve-frontend-image
 ```
