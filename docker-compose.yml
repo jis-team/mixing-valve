@@ -2,16 +2,37 @@ version: "3.9"
 
 services:
   frontend:
-    container_name: mixing-valve
+    container_name: mixing-valve-frontend
     build:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - 3001:3000
+      - 3000:3000
     volumes:
-      - ./frontend:/usr/src/app/frontend
+      - ./frontend:/usr/src/app
     environment:
       - WDS_SOCKET_PORT=0
     restart: always
-    
+    networks:
+      - default
+
+  backend:
+    container_name: mixing-valve-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - 5000:5000
+    volumes:
+      - ./backend:/usr/src/app
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PWD=${DB_PWD}
+      - DB_PORT=${DB_PORT}
+      - SESSION_KEY=${SESSION_KEY}
+    restart: always
+    networks:
+      - default
 
