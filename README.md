@@ -42,6 +42,7 @@ cd ..
 ```
 
 ### docker-compose
+check the frontend and backend port numbers in docker-compose.yml
 ```bash
 docker-compose up -d
 ```

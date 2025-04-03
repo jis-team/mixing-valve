@@ -11,7 +11,7 @@ services:
     volumes:
       - ./frontend:/usr/src/app
     environment:
-      - WDS_SOCKET_PORT=0
+      - WDS_SOCKET_PORT=${WDS_SOCKET_PORT}
     restart: always
     networks:
       - default
