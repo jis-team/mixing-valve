@@ -10,8 +10,8 @@ services:
       - ${FRONTEND_PORT}:3000
     volumes:
       - ./frontend:/usr/src/app
-    environment:
-      - WDS_SOCKET_PORT=${WDS_SOCKET_PORT}
+    env_file:
+      - .env
     restart: always
     networks:
       - default
@@ -25,13 +25,8 @@ services:
       - ${BACKEND_PORT}:5000
     volumes:
       - ./backend:/usr/src/app
-    environment:
-      - DB_HOST=${DB_HOST}
-      - DB_NAME=${DB_NAME}
-      - DB_USER=${DB_USER}
-      - DB_PWD=${DB_PWD}
-      - DB_PORT=${DB_PORT}
-      - SESSION_KEY=${SESSION_KEY}
+    env_file:
+      - .env
     restart: always
     networks:
       - default
