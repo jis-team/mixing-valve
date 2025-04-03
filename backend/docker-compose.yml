@@ -1,0 +1,12 @@
+version: "1.0"
+
+services:
+  mixing-valve-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mixing-valve-backend-image
+    ports:
+      - "5000:5000"
+    volumes:
+      - ${PWD}:/usr/src/app/backend
