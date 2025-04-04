@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { signInSuccess, signOutSuccess } from "../store/authSlice";
 
+const backendPort = process.env.BACKEND_PORT;
+
 function SignInForm() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -15,7 +17,7 @@ function SignInForm() {
     e.preventDefault();
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/signin", {
+      const res = await fetch(`http://localhost:${backendPort}/api/auth/signin`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, userPwd }),
@@ -73,7 +75,7 @@ export default function SignInPage() {
   const handleOpenForm = () => setShowForm(true);
   const handleSignOut = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/auth/signout", {
+      const res = await fetch(`http://localhost:${backendPort}/api/auth/signout`, {
         method: "POST",
         credentials: "include", // 세션 쿠키
       });

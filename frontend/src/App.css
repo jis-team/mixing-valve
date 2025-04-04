@@ -11,24 +11,13 @@ html {
   height: auto;
 }
 
-#setting {
-  .setting-datepicker {
+.component {
+  padding: 20px;
+  text-align: left;
+
+  .table-option {
     display: flex;
     flex-direction: row;
-    justify-content: center;
-    align-items: center;
+    column-gap: 20px;
   }
-
-  .datepicker-start, .datepicker-end {
-    height: 20px;
-    padding: 5px;
-    background: var(--main-bg-color);
-    border: 1px solid #EAEAEA;    
-    border-radius: 3px;
-    
-  }
-}
-
-#A {
-  text-align: left;
 }
