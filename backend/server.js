@@ -1,44 +1,40 @@
-const express = require("express");
-const app = express();
-const port = 5000;
-const bodyParser = require("body-parser");
-const cors = require("cors");
-const session = require("express-session");
-const signin = require("./routes/signin");
-const signout = require("./routes/signout");
 require("dotenv").config();
+const express = require("express");
+const session = require("express-session");
+const cors = require("cors");
 
-app.use(bodyParser.json());
+const app = express();
+const backendPort = process.env.BACKEND_PORT;
+const frontendPort = process.env.FRONTEND_PORT;
+
+// 라우트 불러오기
+const authRouter = require("./routes/auth");
 
 // CORS 설정
 const corsOptions = {
-  origin: "http://localhost:3000",
+  origin: `http://localhost:${frontendPort}`, // 프론트엔드 주소
   credentials: true,
 };
-
 app.use(cors(corsOptions));
+
+// 미들웨어
 app.use(express.json());
 
 // 세션 설정
 app.use(
   session({
-    secret: process.env.SESSION_KEY, // 비밀키는 환경변수로 관리하는 것이 좋습니다.
+    secret: process.env.SESSION_KEY,
     resave: false,
     saveUninitialized: false,
     cookie: {
-      httpOnly: true, // 클라이언트 JavaScript에서 쿠키에 접근하지 못하도록 설정
-      maxAge: 30 * 60 * 1000, // 예: 30분 유지
+      httpOnly: true,
+      maxAge: 30 * 60 * 1000, // 30분
     },
   })
 );
 
-app.use("/api/signin", signin);
-app.use("/api/signout", signout);
+// 라우트
+app.use("/api/auth", authRouter);
 
-// app.post("/signin", (req, res) => {
-//   res.send("로그인 데이터!");
-// });
-
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
-});
+// 연결 확인
+app.listen(backendPort, () => { console.log(`Server is running on http://localhost:${backendPort}`); });

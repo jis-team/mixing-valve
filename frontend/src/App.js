@@ -1,39 +1,28 @@
-import "./App.css";
-
 import React from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import ProtectedRoute from "./ProtectedRoute";
-import SignIn from "./pages/SignIn";
-import DashBoard1 from "./pages/DashBoard1";
-import DashBoard2 from "./pages/DashBoard2";
-import RedirectError from "./pages/RedirectError";
+
+import "./App.css";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import SignInPage from "./pages/SignInPage";
+import DashboardPage from "./pages/DashboardPage";
+import NotFoundPage from "./pages/NotFoundPage";
+import ProtectedRoute from "./routes/ProtectedRoute";
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <BrowserRouter>
-          <Routes>
-            {/* 로그인 페이지 */}
-            <Route path="/" element={<SignIn />} />
+    <BrowserRouter>
+      <Routes>
+        {/* 기본 라우트: 로그인 페이지 */}
+        <Route path="/" element={<SignInPage />} />
 
-            {/* 로그인 사용자를 위한 라우트 */}
-            <Route element={<ProtectedRoute />}>
-              <Route path="/dashboard1" element={<DashBoard1 />} />
-              <Route path="/dashboard2" element={<DashBoard2 />} />
-            </Route>
+        {/* 보호된 라우트: 로그인 사용자만 접근 가능 */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/dashboard" element={<DashboardPage />} />
+        </Route>
 
-            {/* 존재하지 않는 경로 리다이렉트 */}
-            <Route path="*" element={<RedirectError />} />
-          </Routes>
-        </BrowserRouter>
-      </header>
-    </div>
-    // <div className="App">
-    //   <header className="App-header">
-    //     <SignIn />
-    //   </header>
-    // </div>
+        {/* 404 */}
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
