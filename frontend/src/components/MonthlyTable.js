@@ -1,10 +1,15 @@
+// MonthlyTable.js
 import React, { useMemo } from "react";
 import { Table } from "antd";
 
-function MonthlyTable({ measureColumns, monthlyStats, onMonthClick }) {
-  // 테이블 컬럼
+function MonthlyTable({ 
+  selectedYears, 
+  selectedMeasures, 
+  monthlyStats, 
+  onMonthClick 
+}) {
+  // 1) "1~12월" 컬럼
   const columns = useMemo(() => {
-    // 1~12월
     const monthCols = Array.from({ length: 12 }, (_, idx) => {
       const m = idx + 1;
       return {
@@ -13,56 +18,67 @@ function MonthlyTable({ measureColumns, monthlyStats, onMonthClick }) {
         key: `m${m}`,
         onHeaderCell: () => ({
           style: { cursor: "pointer" },
-          onClick: () => onMonthClick?.(m),
+          onClick: () => onMonthClick?.(m), // 월 클릭 시 하위 일별 통계로 drill-down
         }),
       };
     });
 
     return [
       {
+        title: "연도",
+        dataIndex: "year",
+        key: "year",
+        fixed: "left",
+        width: 80,
+      },
+      {
         title: "항목",
         dataIndex: "category",
         key: "category",
         fixed: "left",
-        filters: measureColumns.map(col => ({ text: col, value: col })),
-        onFilter: (value, record) => record.category === value,
       },
       ...monthCols,
       {
         title: "연간 합계",
         dataIndex: "yearSum",
         key: "yearSum",
-        sorter: (a, b) => parseFloat(a.yearSum) - parseFloat(b.yearSum),
       },
       {
         title: "연간 평균",
         dataIndex: "yearAvg",
         key: "yearAvg",
-        sorter: (a, b) => parseFloat(a.yearAvg) - parseFloat(b.yearAvg),
       },
     ];
-  }, [measureColumns, onMonthClick]);
+  }, [onMonthClick]);
 
-  // 테이블 데이터
+  // 2) dataSource: (연도)×(항목)
   const dataSource = useMemo(() => {
     if (!monthlyStats || !Object.keys(monthlyStats).length) return [];
+
+    // MonthlyTable.js
     const rows = [];
-    measureColumns.forEach(col => {
-      const values = monthlyStats[col] || [];
-      let sum = 0;
-      const row = { key: col, category: col };
+    selectedYears.forEach(year => {
+      const yearObj = monthlyStats[year] || {};
+      // yearObj[colA] = [12], yearObj[colB] = [12], ...
 
-      values.forEach((val, idx) => {
-        row[`m${idx + 1}`] = val.toFixed(2);
-        sum += val;
+      selectedMeasures.forEach(col => {
+        const values = yearObj[col] || [];
+        let sum = 0;
+        const row = { key: `${year}-${col}`, year, category: col };
+        
+        values.forEach((val, idx) => {
+          row[`m${idx+1}`] = val.toFixed(2);
+          sum += val;
+        });
+        row.yearSum = sum.toFixed(2);
+        row.yearAvg = (sum / 12).toFixed(2);
+        // MonthlyTable.js
+        rows.push(row);
       });
-
-      row.yearSum = sum.toFixed(2);
-      row.yearAvg = (sum / 12).toFixed(2);
-      rows.push(row);
     });
+
     return rows;
-  }, [monthlyStats, measureColumns]);
+  }, [monthlyStats, selectedMeasures, selectedYears]);
 
   return (
     <Table
