@@ -55,7 +55,6 @@ function MonthlyTable({
   const dataSource = useMemo(() => {
     if (!monthlyStats || !Object.keys(monthlyStats).length) return [];
 
-    // MonthlyTable.js
     const rows = [];
     selectedYears.forEach(year => {
       const yearObj = monthlyStats[year] || {};
@@ -72,7 +71,7 @@ function MonthlyTable({
         });
         row.yearSum = sum.toFixed(2);
         row.yearAvg = (sum / 12).toFixed(2);
-        // MonthlyTable.js
+
         rows.push(row);
       });
     });

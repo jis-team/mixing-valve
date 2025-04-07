@@ -11,6 +11,7 @@ import HourlyTable from "../components/HourlyTable";
 import { getDaysInMonth } from "../utils/getDaysInMonth";
 
 const { Option } = Select;
+const title = "에너지사용량 (A)"
 
 export default function A() {
   // 1) 데이터 로드 & 기본 훅
@@ -129,7 +130,7 @@ export default function A() {
       {error && <p style={{ color: "red" }}>{error}</p>}
 
       <section className="header">
-        <h2>에너지사용량 (A)</h2>
+        <h2>{title}</h2>
 
         <div className="page-option">
           {/* (A) 항목 선택 */}
@@ -139,6 +140,8 @@ export default function A() {
               mode="multiple"
               value={selectedMeasures}
               onChange={vals => setSelectedMeasures(vals)}
+              maxTagCount={2}          // 태그를 2개까지만 표시
+              maxTagPlaceholder={(omittedValues) => `+${omittedValues.length} 항목`}
               placeholder="항목 선택"
             >
               {measureColumns.map(col => (
@@ -156,6 +159,8 @@ export default function A() {
               mode="multiple"
               value={selectedYears}
               onChange={vals => setSelectedYears(vals)}
+              maxTagCount={5}          // 태그를 5개까지만 표시
+              maxTagPlaceholder={(omittedValues) => `+${omittedValues.length} 항목`}
               placeholder="연도 선택"
             >
               {availableYears.map(year => (

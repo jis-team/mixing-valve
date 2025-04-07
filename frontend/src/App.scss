@@ -8,13 +8,18 @@ html {
 
 #header {
   text-align: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #ddd;
+  padding: 20px;
   h1 {
     font-size: 30px;
   }
 }
 
-#page {
-  padding: 50px;
+#tab {
+  padding: 20px;
 
   .row {
     display: flex;
@@ -27,6 +32,7 @@ html {
       display: flex;
       flex-direction: row;
       column-gap: 50px;
+      align-items: center;
 
       // .select-measure .ant-select {
       //   width: 400px;
