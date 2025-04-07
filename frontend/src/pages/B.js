@@ -1,4 +1,4 @@
-// A.js
+// B.js
 import React, { useState, useMemo, useEffect } from "react";
 import "@ant-design/v5-patch-for-react-19";
 import { Select, Radio, Button } from "antd";
@@ -11,6 +11,7 @@ import HourlyTable from "../components/HourlyTable";
 import { getDaysInMonth } from "../utils/getDaysInMonth";
 
 const { Option } = Select;
+const title = "송출량 (B)"
 
 export default function A() {
   // 1) 데이터 로드 & 기본 훅
@@ -22,7 +23,7 @@ export default function A() {
     computeMonthlyStats,
     computeDailyStats,
     computeHourlyStats,
-  } = useStats("./data/dummy_data_a.csv");
+  } = useStats("./data/dummy_data_b.csv");
 
   // 2) 연도/월/일 상태
   const today = new Date();
@@ -129,7 +130,7 @@ export default function A() {
       {error && <p style={{ color: "red" }}>{error}</p>}
 
       <section className="header">
-        <h2>에너지사용량 (A)</h2>
+        <h2>{title}</h2>
 
         <div className="page-option">
           {/* (A) 항목 선택 */}

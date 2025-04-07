@@ -1,7 +1,9 @@
+// DailyTable.js
 import React, { useMemo } from "react";
 import { Table } from "antd";
 
-function DailyTable({ measureColumns, dailyStats, dayCount, onDayClick }) {
+function DailyTable({ selectedYears, selectedMeasures, dailyStats, dayCount, onDayClick }) {
+  // 1) 1~31일 컬럼
   const columns = useMemo(() => {
     if (!dayCount) return [];
     const dayCols = Array.from({ length: dayCount }, (_, idx) => {
@@ -12,12 +14,20 @@ function DailyTable({ measureColumns, dailyStats, dayCount, onDayClick }) {
         key: `d${d}`,
         onHeaderCell: () => ({
           style: { cursor: "pointer" },
+          // 일 클릭 → 시간별 통계로 drill-down
           onClick: () => onDayClick?.(d),
         }),
       };
     });
 
     return [
+      {
+        title: "연도",
+        dataIndex: "year",
+        key: "year",
+        fixed: "left",
+        width: 80,
+      },
       {
         title: "항목",
         dataIndex: "category",
@@ -38,26 +48,38 @@ function DailyTable({ measureColumns, dailyStats, dayCount, onDayClick }) {
     ];
   }, [dayCount, onDayClick]);
 
+  // 2) dataSource: (연도)×(항목)
   const dataSource = useMemo(() => {
     if (!dailyStats || !Object.keys(dailyStats).length) return [];
+
     const rows = [];
-    measureColumns.forEach(col => {
-      const values = dailyStats[col] || [];
-      let sum = 0;
-      const row = { key: col, category: col };
+    selectedYears.forEach(year => {
+      const yearObj = dailyStats[year] || {};
+      // yearObj[colA] = [31], yearObj[colB] = [31], ...
 
-      for (let i = 0; i < dayCount; i++) {
-        const val = values[i] || 0;
-        row[`d${i + 1}`] = val.toFixed(2);
-        sum += val;
-      }
+      selectedMeasures.forEach(col => {
+        const values = yearObj[col] || [];
+        let sum = 0;
+        const row = {
+          key: `${year}-${col}`,
+          year,
+          category: col,
+        };
 
-      row.monthlySum = sum.toFixed(2);
-      row.monthlyAvg = (sum / dayCount).toFixed(2);
-      rows.push(row);
+        for (let i = 0; i < dayCount; i++) {
+          const val = values[i] || 0;
+          row[`d${i + 1}`] = val.toFixed(2);
+          sum += val;
+        }
+        row.monthlySum = sum.toFixed(2);
+        row.monthlyAvg = dayCount > 0 ? (sum / dayCount).toFixed(2) : "0.00";
+
+        rows.push(row);
+      });
     });
+
     return rows;
-  }, [dailyStats, dayCount, measureColumns]);
+  }, [dailyStats, dayCount, selectedMeasures, selectedYears]);
 
   return (
     <Table

@@ -1,16 +1,16 @@
+// StatsChart.js
 import React from "react";
 import Chart from "react-apexcharts";
 
-function StatsChart({ title, categories = [], series = [], height = 300 }) {
+function StatsChart({ categories = [], series = [], height = 300 }) {
   const chartOptions = {
-    chart: { type: "line" },
+    chart: { type: "line", zoom: { enabled: true, allowMouseWheelZoom: false }},
     xaxis: { categories },
-    stroke: { curve: "smooth" },
+    stroke: { curve: "smooth" },    
   };
 
   return (
-    <div>
-      <h3>{title}</h3>
+    <div className="chart">
       <Chart options={chartOptions} series={series} type="line" height={height} />
     </div>
   );

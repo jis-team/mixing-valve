@@ -1,0 +1,56 @@
+:root {
+  --main-bg-color: white;
+}
+
+html {
+  background-color: var(--main-bg-color);
+}
+
+#header {
+  text-align: center;
+  h1 {
+    font-size: 30px;
+  }
+}
+
+#page {
+  padding: 50px;
+
+  .row {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    text-align: left;
+    padding: 20px;
+
+    .page-option {
+      display: flex;
+      flex-direction: row;
+      column-gap: 50px;
+
+      // .select-measure .ant-select {
+      //   width: 400px;
+      // }
+  
+      // .select-year .ant-select {
+      //   width: 300px;
+      // }
+  
+      .select-calc-mode .ant-radio-group {
+        width: 120px;
+      }
+    }
+
+    .table-section {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+
+      .table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+    }
+  }
+}
