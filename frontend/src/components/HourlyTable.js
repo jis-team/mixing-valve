@@ -2,7 +2,11 @@
 import React, { useMemo } from "react";
 import { Table } from "antd";
 
-function HourlyTable({ selectedYears, selectedMeasures, hourlyStats }) {
+function HourlyTable({ 
+    selectedYears, 
+    selectedMeasures, 
+    hourlyStats 
+}) {
   // 1) 0~23시 컬럼
   const columns = useMemo(() => {
     const hourCols = Array.from({ length: 24 }, (_, idx) => ({

@@ -2,7 +2,13 @@
 import React, { useMemo } from "react";
 import { Table } from "antd";
 
-function DailyTable({ selectedYears, selectedMeasures, dailyStats, dayCount, onDayClick }) {
+function DailyTable({ 
+    selectedYears, 
+    selectedMeasures, 
+    dailyStats, 
+    dayCount, 
+    onDayClick 
+}) {
   // 1) 1~31일 컬럼
   const columns = useMemo(() => {
     if (!dayCount) return [];
@@ -14,7 +20,6 @@ function DailyTable({ selectedYears, selectedMeasures, dailyStats, dayCount, onD
         key: `d${d}`,
         onHeaderCell: () => ({
           style: { cursor: "pointer" },
-          // 일 클릭 → 시간별 통계로 drill-down
           onClick: () => onDayClick?.(d),
         }),
       };

@@ -1,3 +1,4 @@
+// parseCsv.js
 export async function parseCsv(csvUrl) {
     // CSV 파일 fetch
     const response = await fetch(csvUrl);
