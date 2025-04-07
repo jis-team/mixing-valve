@@ -1,10 +1,9 @@
 // DashboardPage.js
 import React from "react";
-import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { signOutSuccess } from "../store/authSlice";
-
 import { Button } from "antd";
+import { useNavigate } from "react-router-dom";
 
 import A from "./A";
 import B from "./B";
@@ -14,23 +13,12 @@ export default function DashboardPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // 로그아웃
-  const handleSignOut = async () => {
-    try {
-      const res = await fetch(`http://localhost:${process.env.REACT_APP_BACKEND_PORT}/api/auth/signout`, {
-        method: "POST",
-        credentials: "include",
-      });
-      if (res.ok) {
-        dispatch(signOutSuccess());
-        navigate("/"); 
-      }
-    } catch (err) {
-      console.error("로그아웃 실패:", err);
-    }
+  // 단순 로컬 상태만 초기화
+  const handleSignOut = () => {
+    dispatch(signOutSuccess());
+    navigate("/");
   };
 
-  // 탭
   const items = [
     {
       label: "에너지사용량 (A)",
@@ -56,11 +44,9 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Tabs를 사용해 A/B 전환할 경우:*/}
       <div id="tab">
         <Tabs defaultActiveKey="a-tab" items={items} />
       </div>
-      
     </div>
   );
 }
