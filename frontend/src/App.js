@@ -1,6 +1,6 @@
 // App.js
 import React from "react";
-import { HashRouter, Routes, Route } from "react-router-dom"; // [추가]
+import { BrowserRouter, Routes, Route } from "react-router-dom"; // [추가]
 import "./App.scss";
 
 import SignInPage from "./pages/SignInPage";
@@ -10,7 +10,7 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 
 function App() {
   return (
-    <HashRouter>
+    <BrowserRouter basename={process.env.PUBLIC_URL}>
       <Routes>
         {/* 기본 라우트: 로그인 페이지 */}
         <Route path="/" element={<SignInPage />} />
@@ -23,7 +23,7 @@ function App() {
         {/* 404 */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
-    </HashRouter>
+    </BrowserRouter>
   );
 }
 
