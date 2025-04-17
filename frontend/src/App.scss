@@ -1,56 +1,107 @@
+// ./src/App.scss
 :root {
   --main-bg-color: white;
 }
 
 html {
   background-color: var(--main-bg-color);
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  padding: 0;
 }
 
 #header {
-  text-align: center;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  height: 100px;
+  position: relative;
   border-bottom: 1px solid #ddd;
-  padding: 20px;
-  h1 {
-    font-size: 30px;
+
+  .header-title {
+    width: 100%;
+    height: 50px;
+    line-height: 50px;
+    text-align: center;
+
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+
+    p {
+      font-size: 30px;
+      margin: auto;
+      font-weight: bold;
+    }
+  }
+
+  .header-button {
+    width: 100px;
+    height: 50px;
+    line-height: 50px;
+    text-align: center;
+
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 85%;
+    right: 0;
+    margin: auto;
   }
 }
 
 #tab {
-  padding: 20px;
+  margin: 0 20px 0 20px;
+
+  .ant-tabs-nav {
+    padding: 10px 0 10px 0;
+    position: sticky;
+    top: 0;
+    z-index: 999;
+    background: var(--main-bg-color);
+  }
 
   .row {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 20px;
     text-align: left;
     padding: 20px;
 
-    .page-option {
-      display: flex;
-      flex-direction: row;
-      column-gap: 50px;
-      align-items: center;
-
-      // .select-measure .ant-select {
-      //   width: 400px;
-      // }
-  
-      // .select-year .ant-select {
-      //   width: 300px;
-      // }
-  
-      .select-calc-mode .ant-radio-group {
-        width: 120px;
-      }
+    
+    .line {
+      width: 100%;
+      text-align: center;
+      border-bottom: 1px solid #eee;
+      line-height: 1em;
+      margin: 10px 0px 20px;
     }
 
-    .table-section {
+    h2, h3 {
+      text-align: center;
+      margin: 0 0 10px 0;
+    }
+
+    .chart-section, .table-section {
       display: flex;
       flex-direction: column;
       gap: 10px;
+
+      .chart-option, .table-option {
+        display: flex;
+        flex-direction: row;
+        column-gap: 50px;
+        align-items: center;
+
+        .ant-select, .ant-radio-group {
+          min-width: 120px;
+          max-width: 400px;
+        }
+      }
 
       .table-header {
         display: flex;
@@ -59,4 +110,5 @@ html {
       }
     }
   }
+  
 }

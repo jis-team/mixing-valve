@@ -1,4 +1,4 @@
-// useStats.js
+// ./src/hooks/useStats.js
 import { useState, useEffect, useMemo } from "react";
 import { parseCsv } from "../utils/parseCsv";
 
@@ -41,180 +41,159 @@ export default function useStats(csvPath) {
     return keys.filter(k => k !== "datetime");
   }, [rawData]);
 
-  /* ------------------------------------------------------------------
-   * (A) 월별 통계 (연도별 분리)
-   *   => 반환 구조 예시:
-   *   {
-   *     "2022": { colA: [...12], colB: [...12], ... },
-   *     "2023": { colA: [...12], colB: [...12], ... }
-   *   }
-   * ------------------------------------------------------------------ */
+  // (A) 월별 통계
   function computeMonthlyStats(selectedYears, calcMode) {
     const result = {};
     selectedYears.forEach(yearStr => {
-      // 1) 연도에 맞는 데이터 필터
       const filtered = rawData.filter(item => {
         const year = item.datetime?.slice(0, 4);
         return year === yearStr;
       });
 
-      // 2) 월별 데이터 수집
       const monthly = {};
       for (let m = 1; m <= 12; m++) {
         monthly[m] = {};
-        measureColumns.forEach(col => (monthly[m][col] = []));
+        measureColumns.forEach(col => {
+          monthly[m][col] = [];
+        });
       }
 
       filtered.forEach(item => {
         const dObj = new Date(item.datetime);
         const m = dObj.getMonth() + 1;
         measureColumns.forEach(col => {
-          if (typeof item[col] === "number") {
-            monthly[m][col].push(item[col]);
+          const val = item[col];
+          if (typeof val === "number") {
+            monthly[m][col].push(val);
           }
         });
       });
 
-      // 3) 월별 합계/평균 계산
       const yearResult = {};
       measureColumns.forEach(col => {
-        yearResult[col] = Array(12).fill(0);
+        yearResult[col] = Array(12).fill(null);
       });
 
       for (let m = 1; m <= 12; m++) {
         measureColumns.forEach(col => {
           const arr = monthly[m][col];
-          if (arr.length) {
-            const sum = arr.reduce((acc, val) => acc + val, 0);
+          if (arr.length > 0) {
+            const sum = arr.reduce((acc, v) => acc + v, 0);
             yearResult[col][m - 1] = (calcMode === "sum") ? sum : sum / arr.length;
           }
         });
       }
 
-      // 4) result에 할당
       result[yearStr] = yearResult;
     });
     return result;
   }
 
-  /* ------------------------------------------------------------------
-   * (B) 일별 통계 (연도별 분리)
-   *   => 반환 구조 예시:
-   *   {
-   *     "2022": { colA: [...31], colB: [...31], ... },
-   *     "2023": { colA: [...31], colB: [...31], ... }
-   *   }
-   * ------------------------------------------------------------------ */
+  // (B) 일별 통계
   function computeDailyStats(selectedYears, month, calcMode) {
     const result = {};
-
     if (!month) return result;
+
     selectedYears.forEach(yearStr => {
-      // 1) 해당 연도+월 데이터만 필터
       const filtered = rawData.filter(item => {
         const dObj = new Date(item.datetime);
-        const y = dObj.getFullYear();
-        const m = dObj.getMonth() + 1;
-        return String(y) === yearStr && m === month;
+        return (
+          String(dObj.getFullYear()) === yearStr &&
+          dObj.getMonth() + 1 === month
+        );
       });
 
-      // 2) 일별 데이터 수집 (1~31일)
       const daily = {};
       for (let d = 1; d <= 31; d++) {
         daily[d] = {};
-        measureColumns.forEach(col => (daily[d][col] = []));
+        measureColumns.forEach(col => {
+          daily[d][col] = [];
+        });
       }
 
       filtered.forEach(item => {
         const dObj = new Date(item.datetime);
         const day = dObj.getDate();
         measureColumns.forEach(col => {
-          if (typeof item[col] === "number") {
-            daily[day][col].push(item[col]);
+          const val = item[col];
+          if (typeof val === "number") {
+            daily[day][col].push(val);
           }
         });
       });
 
-      // 3) 일별 합계/평균 계산
       const yearResult = {};
       measureColumns.forEach(col => {
-        yearResult[col] = Array(31).fill(0);
+        yearResult[col] = Array(31).fill(null);
       });
 
       for (let d = 1; d <= 31; d++) {
         measureColumns.forEach(col => {
           const arr = daily[d][col];
-          if (arr.length) {
-            const sum = arr.reduce((acc, val) => acc + val, 0);
-            yearResult[col][d - 1] = (calcMode === "sum") ? sum : sum / arr.length;
+          if (arr.length > 0) {
+            const sum = arr.reduce((acc, v) => acc + v, 0);
+            yearResult[col][d - 1] = (calcMode === "sum")
+              ? sum
+              : sum / arr.length;
           }
         });
       }
 
-      // 4) result에 할당
       result[yearStr] = yearResult;
     });
 
     return result;
   }
 
-  /* ------------------------------------------------------------------
-   * (C) 시간별 통계 (연도별 분리)
-   *   => 반환 구조 예시:
-   *   {
-   *     "2022": { colA: [...24], colB: [...24], ... },
-   *     "2023": { colA: [...24], colB: [...24], ... }
-   *   }
-   * ------------------------------------------------------------------ */
+  // (C) 시간별 통계
   function computeHourlyStats(selectedYears, month, day, calcMode) {
     const result = {};
-
     if (!month || !day) return result;
+
     selectedYears.forEach(yearStr => {
-      // 1) 해당 연도+월+일 데이터만 필터
       const filtered = rawData.filter(item => {
         const dObj = new Date(item.datetime);
         return (
           String(dObj.getFullYear()) === yearStr &&
-          (dObj.getMonth() + 1) === month &&
+          dObj.getMonth() + 1 === month &&
           dObj.getDate() === day
         );
       });
 
-      // 2) 시간별 데이터 수집 (0~23시)
       const hourly = {};
       for (let h = 0; h < 24; h++) {
         hourly[h] = {};
-        measureColumns.forEach(col => (hourly[h][col] = []));
+        measureColumns.forEach(col => {
+          hourly[h][col] = [];
+        });
       }
 
       filtered.forEach(item => {
         const dObj = new Date(item.datetime);
         const hh = dObj.getHours();
         measureColumns.forEach(col => {
-          if (typeof item[col] === "number") {
-            hourly[hh][col].push(item[col]);
+          const val = item[col];
+          if (typeof val === "number") {
+            hourly[hh][col].push(val);
           }
         });
       });
 
-      // 3) 시간별 합계/평균 계산
       const yearResult = {};
       measureColumns.forEach(col => {
-        yearResult[col] = Array(24).fill(0);
+        yearResult[col] = Array(24).fill(null);
       });
 
       for (let h = 0; h < 24; h++) {
         measureColumns.forEach(col => {
           const arr = hourly[h][col];
-          if (arr.length) {
-            const sum = arr.reduce((acc, val) => acc + val, 0);
+          if (arr.length > 0) {
+            const sum = arr.reduce((acc, v) => acc + v, 0);
             yearResult[col][h] = (calcMode === "sum") ? sum : sum / arr.length;
           }
         });
       }
 
-      // 4) result에 할당
       result[yearStr] = yearResult;
     });
 

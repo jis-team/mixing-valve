@@ -1,4 +1,4 @@
-// getDaysInMonth.js
+// ./src/utils/getDaysInMonth.js
 export function getDaysInMonth(years, month, mode = "max") {
   if (!years || !years.length) return 0;
 
