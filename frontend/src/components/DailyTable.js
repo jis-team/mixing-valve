@@ -1,4 +1,4 @@
-// DailyTable.js
+// ./src/components/DailyTable.js
 import React, { useMemo } from "react";
 import { Table } from "antd";
 
@@ -65,19 +65,32 @@ function DailyTable({
       selectedMeasures.forEach(col => {
         const values = yearObj[col] || [];
         let sum = 0;
+        let count = 0;
         const row = {
           key: `${year}-${col}`,
           year,
           category: col,
         };
 
-        for (let i = 0; i < dayCount; i++) {
-          const val = values[i] || 0;
-          row[`d${i + 1}`] = val.toFixed(2);
-          sum += val;
+        values.forEach((val, idx) => {
+          if (val === null) {
+            row[`d${idx + 1}`] = "";
+          } else {
+            row[`d${idx + 1}`] = val.toFixed(2);
+            sum += val;
+            count += 1;
+          }
+        });
+
+        if (count === 0) {
+          row.monthlySum = "";
+          row.monthlyAvg = "";
+        } else {
+          row.monthlySum = sum.toFixed(2);
+          // 12개월 중 count개만 데이터가 있더라도, 기존 로직대로 "연간합 / 12" 인지,
+          // 실제 (sum / count) 인지 정책 결정. 여기서는 sum/12 유지
+          row.monthlyAvg = dayCount > 0 ? (sum / dayCount).toFixed(2) : "";
         }
-        row.monthlySum = sum.toFixed(2);
-        row.monthlyAvg = dayCount > 0 ? (sum / dayCount).toFixed(2) : "0.00";
 
         rows.push(row);
       });

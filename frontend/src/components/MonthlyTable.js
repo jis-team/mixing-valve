@@ -1,4 +1,4 @@
-// MonthlyTable.js
+// ./src/components/MonthlyTable.js
 import React, { useMemo } from "react";
 import { Table } from "antd";
 
@@ -63,14 +63,28 @@ function MonthlyTable({
       selectedMeasures.forEach(col => {
         const values = yearObj[col] || [];
         let sum = 0;
+        let count = 0;
         const row = { key: `${year}-${col}`, year, category: col };
         
         values.forEach((val, idx) => {
-          row[`m${idx+1}`] = val.toFixed(2);
-          sum += val;
+          if (val === null) {
+            row[`m${idx + 1}`] = "";
+          } else {
+            row[`m${idx + 1}`] = val.toFixed(2);
+            sum += val;
+            count += 1;
+          }
         });
-        row.yearSum = sum.toFixed(2);
-        row.yearAvg = (sum / 12).toFixed(2);
+
+        if (count === 0) {
+          row.yearSum = "";
+          row.yearAvg = "";
+        } else {
+          row.yearSum = sum.toFixed(2);
+          // 12개월 중 count개만 데이터가 있더라도, 기존 로직대로 "연간합 / 12" 인지,
+          // 실제 (sum / count) 인지 정책 결정. 여기서는 sum/12 유지
+          row.yearAvg = (sum / 12).toFixed(2);
+        }
 
         rows.push(row);
       });
