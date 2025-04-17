@@ -10,7 +10,7 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={process.env.PUBLIC_URL}>
       <Routes>
         {/* 기본 라우트: 로그인 페이지 */}
         <Route path="/" element={<SignInPage />} />
