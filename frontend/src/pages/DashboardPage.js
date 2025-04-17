@@ -1,14 +1,13 @@
-// DashboardPage.js
+// ./src/pages/DashboardPage.js
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { signOutSuccess } from "../store/authSlice";
 
-import { Button } from "antd";
-
 import A from "./A";
 import B from "./B";
-import { Tabs } from "antd";
+import C from "./C";
+import { Tabs, Button } from "antd";
 
 export default function DashboardPage() {
   const dispatch = useDispatch();
@@ -32,31 +31,24 @@ export default function DashboardPage() {
 
   // 탭
   const items = [
-    {
-      label: "에너지사용량 (A)",
-      key: "a-tab",
-      children: <A />,
-    },
-    {
-      label: "송출량 (B)",
-      key: "b-tab",
-      children: <B />,
-    },
+    { label: "에너지사용량 (A)", key: "a-tab", children: <A />, },
+    { label: "송출량 (B)", key: "b-tab", children: <B />, },
+    { label: "운용효율 (C)", key: "c-tab", children: <C />, },
   ];
 
   return (
     <div>
       <div id="header">
-        <div></div>
-        <h1 style={{ margin: 0 }}>한국가스공사(KOGAS)</h1>
-        <div>
+        <div className="header-title">
+          <p> 한국가스공사(KOGAS) </p>
+        </div>
+        <div className="header-button">
           <Button onClick={handleSignOut} danger>
             로그아웃
           </Button>
         </div>
       </div>
 
-      {/* Tabs를 사용해 A/B 전환할 경우:*/}
       <div id="tab">
         <Tabs defaultActiveKey="a-tab" items={items} />
       </div>
