@@ -82,7 +82,7 @@ export default function ChartSection({ csvPath }) {
 
   return (
     <section className="chart-section">
-      {loading && <p>로딩 중...</p>}
+      {loading && <p>데이터 로딩 중...</p>}
       {error && <p style={{ color: "red" }}>{error}</p>}
 
       <div className="chart-option">

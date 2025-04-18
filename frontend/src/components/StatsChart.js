@@ -1,76 +1,76 @@
 // ./src/components/StatsChart.js
 import React, { useMemo } from "react";
-import Chart from "react-apexcharts";
+import ReactECharts from "echarts-for-react";
 
-function useMissingShadedArea(categories, series) {
-  return useMemo(() => {
-    if (!categories?.length || !series?.length) return [];
+export default function StatsChart({
+  categories = [],
+  series = [],
+  height = NaN
+}) {
 
-    const dataCount = categories.length;
-    const isMissing = Array(dataCount).fill(false);
-
-    for (let i = 0; i < dataCount; i++) {
-      for (const s of series) {
-        const val = s.data[i];
-        if (val === null || val === undefined) {
-          isMissing[i] = true;
-          break;
-        }
-      }
+  const option = useMemo(() => {
+    if (!categories.length || !series.length) {
+      return {
+        title: { text: "Chart Loading ...", left: "center", top: "center"},
+        xAxis: { type: "category", data: [] },
+        yAxis: { type: "value" },
+        series: []
+      };
     }
 
-    const xaxisAnnotations = [];
-    let idx = 0;
-    while (idx < dataCount) {
-      if (isMissing[idx]) {
-        const startIndex = idx;
-        while (idx < dataCount && isMissing[idx]) {
-          idx++;
-        }
-        const endIndex = idx - 1;
-
-        if (startIndex >= 0 && endIndex < dataCount) {
-          xaxisAnnotations.push({
-            x: categories[startIndex],
-            x2: categories[endIndex],
-            fillColor: "rgba(255,0,0,0.2)",
-            borderColor: "rgba(255,0,0,0.3)",
-            opacity: 1,
-          });
-        }
-      } else {
-        idx++;
-      }
-    }
-
-    return xaxisAnnotations;
-  }, [categories, series]);
-}
-
-function StatsChart({ categories = [], series = [], height = 300 }) {
-  const missingAreas = useMissingShadedArea(categories, series);
-  const chartOptions = {
-    chart: {
+    const echartsSeries = series.map((s) => ({
+      name: s.name,
       type: "line",
-      zoom: { enabled: true, allowMouseWheelZoom: false },
-    },
-    xaxis: { categories },
-    stroke: { curve: "smooth" },
-    annotations: {
-      xaxis: missingAreas,
-    },
-  };
+      data: s.data,
+      connectNulls: false,
+      showSymbol: false
+    }));
+
+    return {
+      legend: {
+        show: true,
+        bottom: 0
+      },
+      tooltip: {
+        trigger: "axis"
+      },
+      xAxis: {
+        type: "category",
+        data: categories,
+      },
+      yAxis: {
+        type: "value"
+      },
+      dataZoom: {
+          type: "inside",
+          realtime: true
+      },
+      toolbox: {
+        show: true,
+        feature: {
+          dataView: {show: true},
+          dataZoom: {show: true, yAxisIndex: 'none'},
+        }
+      },
+      grid: {
+        left: '1%',
+        right: '1%',
+        bottom: '10%',
+        top: '10%',
+        containLabel: true
+      },
+      series: echartsSeries
+    };
+  }, [categories, series]);
 
   return (
-    <div className="chart">
-      <Chart
-        options={chartOptions}
-        series={series}
-        type="line"
-        height={height}
+    <div style={{ width: "100%", height }}>
+      <ReactECharts
+        option={option}
+        style={{ width: "100%", height: "100%" }}
+        notMerge={true}
+        lazyUpdate={true}
       />
     </div>
   );
 }
-
-export default StatsChart;

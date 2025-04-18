@@ -71,7 +71,6 @@ body {
     gap: 20px;
     text-align: left;
     padding: 20px;
-
     
     .line {
       width: 100%;
@@ -97,9 +96,11 @@ body {
         column-gap: 50px;
         align-items: center;
 
-        .ant-select, .ant-radio-group {
-          min-width: 120px;
-          max-width: 400px;
+        .select-year {
+          width: 250px;
+        } 
+        .select-category, .ant-radio-group {
+          width: 350px;
         }
       }
 

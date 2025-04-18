@@ -20,7 +20,6 @@ export async function parseCsv(csvUrl) {
       if (colName === "datetime") {
         rowObj[colName] = rawValue;
       } else {
-        // 빈 문자열 또는 parseFloat 실패 시 null
         if (rawValue === "") {
           rowObj[colName] = null;
         } else {

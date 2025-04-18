@@ -1,4 +1,4 @@
-// ./src/pages/BasePage.js
+// ./src/pages/TableSection.js
 import React, { useState, useMemo, useEffect } from "react";
 import "@ant-design/v5-patch-for-react-19";
 import { Select, Radio } from "antd";
@@ -11,7 +11,7 @@ import { getDaysInMonth } from "../utils/getDaysInMonth";
 
 const { Option } = Select;
 
-export default function BasePage({ csvPath }) {
+export default function TableSection({ csvPath }) {
   const {
     loading,
     error,
@@ -73,9 +73,10 @@ export default function BasePage({ csvPath }) {
 
       <div className="table-option">
         {/* 연도 선택 */}
-        <div className="select-year">
+        <div>
           <label> 연도 선택 : </label>
           <Select
+            className="select-year"
             mode="multiple"
             value={selectedYears}
             onChange={vals => setSelectedYears(vals)}
@@ -90,9 +91,10 @@ export default function BasePage({ csvPath }) {
         </div>
 
         {/* 항목 선택 */}
-        <div className="항목 선택">
+        <div>
           <label> 항목 선택 : </label>
           <Select
+            className="select-category"
             mode="multiple"
             value={selectedMeasures}
             onChange={vals => setSelectedMeasures(vals)}
