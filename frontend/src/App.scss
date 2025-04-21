@@ -14,10 +14,26 @@ body {
   padding: 0;
 }
 
+.line-1 {
+  width: 100%;
+  text-align: center;
+  border-bottom: 1px solid #999;
+  line-height: 1em;
+  margin: 10px 0px 20px;
+}
+
+.line-2 {
+  width: 100%;
+  text-align: center;
+  border-bottom: 1px solid #eee;
+  line-height: 1em;
+  margin: 10px 0px 20px;
+}
+
 #header {
   height: 100px;
   position: relative;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #999;
 
   .header-title {
     width: 100%;
@@ -54,7 +70,7 @@ body {
   }
 }
 
-#tab {
+#tab, #summary {
   margin: 0 20px 0 20px;
 
   .ant-tabs-nav {
@@ -71,14 +87,6 @@ body {
     gap: 20px;
     text-align: left;
     padding: 20px;
-    
-    .line {
-      width: 100%;
-      text-align: center;
-      border-bottom: 1px solid #eee;
-      line-height: 1em;
-      margin: 10px 0px 20px;
-    }
 
     h2, h3 {
       text-align: center;
@@ -111,5 +119,4 @@ body {
       }
     }
   }
-  
 }
