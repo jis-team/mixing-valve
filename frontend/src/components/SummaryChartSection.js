@@ -1,36 +1,37 @@
 // ./src/components/SummaryChartSection.js
 import React, { useEffect, useState, useMemo } from "react";
+import { useDispatch, useSelector } from "react-redux";
+
 import "@ant-design/v5-patch-for-react-19";
 import { DatePicker, Button } from "antd";
 import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
-import { useDispatch, useSelector } from "react-redux";
 
 import StatsChart from "./StatsChart";
-import { fetchCsvData } from "../store/csvSlice";
+import { fetchTableData } from "../store/csvSlice";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
 
 const { RangePicker } = DatePicker;
 
-export default function SummaryChartSection({ csvPaths = [] }) {
+export default function SummaryChartSection({ tableNames = [] }) {
   const dispatch = useDispatch();
   const { csvMap, loadingMap, errorMap } = useSelector((state) => state.csv);
 
-  // CSV 로드
+  // 여러 테이블 로드
   useEffect(() => {
-    csvPaths.forEach((path) => {
-      dispatch(fetchCsvData(path));
+    tableNames.forEach((tableName) => {
+      dispatch(fetchTableData(tableName));
     });
-  }, [csvPaths, dispatch]);
+  }, [tableNames, dispatch]);
 
-  // 로딩 / 에러
-  const loading = csvPaths.some((p) => loadingMap[p]);
-  const error = csvPaths.map((p) => errorMap[p]).filter(Boolean).join(" / ") || null;
+  // 로딩/에러
+  const loading = tableNames.some((tn) => loadingMap[tn]);
+  const error = tableNames.map((tn) => errorMap[tn]).filter(Boolean).join(" / ") || null;
 
-  // 기간 (디폴트 7일)
+  // 기간 필터
   const defaultStart = dayjs().subtract(6, "day");
   const defaultEnd = dayjs();
   const [startDate, setStartDate] = useState(defaultStart.format("YYYY-MM-DD"));
@@ -39,30 +40,31 @@ export default function SummaryChartSection({ csvPaths = [] }) {
   // 차트 표시 여부
   const [showChart, setShowChart] = useState(true);
 
-  // 여러 CSV의 “마지막 열”만 추출
+  // "마지막 열"만 추출: tableNames → datasets
+  // datasets = [ { measureName, data: [{datetime, value}, ...]}, ... ]
   const datasets = useMemo(() => {
     const resultArr = [];
-    for (let path of csvPaths) {
-      const dataArr = csvMap[path] || [];
-      if (!dataArr.length) continue;
-
-      const headers = Object.keys(dataArr[0]);
+    for (let tblName of tableNames) {
+      const arr = csvMap[tblName] || [];
+      if (!arr.length) continue;
+      const headers = Object.keys(arr[0]);
       if (headers.length <= 1) continue;
       const lastCol = headers[headers.length - 1];
 
-      const filtered = dataArr
+      const items = arr
         .filter((row) => row.datetime && row[lastCol] != null)
         .map((row) => ({
           datetime: row.datetime,
           value: row[lastCol],
         }));
+
       resultArr.push({
         measureName: lastCol,
-        data: filtered,
+        data: items,
       });
     }
     return resultArr;
-  }, [csvMap, csvPaths]);
+  }, [tableNames, csvMap]);
 
   // 기간 필터링
   const filteredDatasets = useMemo(() => {
@@ -78,15 +80,18 @@ export default function SummaryChartSection({ csvPaths = [] }) {
     });
   }, [datasets, startDate, endDate]);
 
-  // 차트 데이터
+  // 차트 데이터 구성
   const { chartCategories, chartSeries } = useMemo(() => {
     if (!filteredDatasets.length) {
       return { chartCategories: [], chartSeries: [] };
     }
 
+    // 모든 datetime 합집합
     let allTimes = new Set();
     filteredDatasets.forEach((ds) => {
-      ds.data.forEach((item) => allTimes.add(item.datetime));
+      ds.data.forEach((item) => {
+        allTimes.add(item.datetime);
+      });
     });
     let allTimesSorted = Array.from(allTimes).sort(
       (a, b) => dayjs(a).valueOf() - dayjs(b).valueOf()
@@ -97,13 +102,13 @@ export default function SummaryChartSection({ csvPaths = [] }) {
       const dataArr = allTimesSorted.map((t) =>
         mapVal.has(t) ? +mapVal.get(t).toFixed(2) : null
       );
-      return { name: ds.measureName, data: dataArr };
+      return {
+        name: ds.measureName,
+        data: dataArr,
+      };
     });
 
-    const categories = allTimesSorted.map((t) =>
-      dayjs(t).format("MM-DD HH:mm")
-    );
-
+    const categories = allTimesSorted.map((t) => dayjs(t).format("MM-DD HH:mm"));
     return { chartCategories: categories, chartSeries: seriesArr };
   }, [filteredDatasets]);
 

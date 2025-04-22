@@ -1,35 +1,40 @@
 // ./src/components/TableSection.js
 import React, { useEffect, useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+
 import "@ant-design/v5-patch-for-react-19";
 import { Select, Radio } from "antd";
-import { useDispatch, useSelector } from "react-redux";
 
 import MonthlyTable from "./MonthlyTable";
 import DailyTable from "./DailyTable";
 import HourlyTable from "./HourlyTable";
 
-import { fetchCsvData } from "../store/csvSlice";
+import { fetchTableData } from "../store/csvSlice";
 import { getDaysInMonth } from "../utils/getDaysInMonth";
-
-import { computeMonthlyStats, computeDailyStats, computeHourlyStats, } from "../utils/calcStats";
+import {
+  computeMonthlyStats,
+  computeDailyStats,
+  computeHourlyStats,
+} from "../utils/calcStats";
 
 const { Option } = Select;
 
-export default function TableSection({ csvPath }) {
+export default function TableSection({ tableName }) {
   const dispatch = useDispatch();
   const { csvMap, loadingMap, errorMap } = useSelector((state) => state.csv);
 
+  // DB 테이블 로드
   useEffect(() => {
-    if (csvPath) {
-      dispatch(fetchCsvData(csvPath));
+    if (tableName) {
+      dispatch(fetchTableData(tableName));
     }
-  }, [csvPath, dispatch]);
+  }, [tableName, dispatch]);
 
-  const rawData = csvMap[csvPath] || [];
-  const loading = loadingMap[csvPath] || false;
-  const error = errorMap[csvPath] || null;
+  const rawData = csvMap[tableName] || [];
+  const loading = loadingMap[tableName] || false;
+  const error = errorMap[tableName] || null;
 
-  // (A) 연도 추출
+  // 가용 연도
   const availableYears = useMemo(() => {
     const setY = new Set();
     rawData.forEach((item) => {
@@ -39,16 +44,15 @@ export default function TableSection({ csvPath }) {
     return Array.from(setY).sort();
   }, [rawData]);
 
-  // (B) 측정 컬럼
+  // 측정 컬럼
   const measureColumns = useMemo(() => {
     if (!rawData.length) return [];
     return Object.keys(rawData[0]).filter((k) => k !== "datetime");
   }, [rawData]);
 
+  // 상태값
   const today = new Date();
-  const [selectedYears, setSelectedYears] = useState([
-    String(today.getFullYear()),
-  ]);
+  const [selectedYears, setSelectedYears] = useState([String(today.getFullYear())]);
   const [selectedMonth, setSelectedMonth] = useState(today.getMonth() + 1);
   const [selectedDay, setSelectedDay] = useState(today.getDate());
   const [calcMode, setCalcMode] = useState("sum");
@@ -60,26 +64,17 @@ export default function TableSection({ csvPath }) {
     }
   }, [measureColumns, selectedMeasures]);
 
-  // (1) 월별 통계
+  // 통계 계산
   const monthlyStats = useMemo(() => {
     return computeMonthlyStats(rawData, measureColumns, selectedYears, calcMode);
   }, [rawData, measureColumns, selectedYears, calcMode]);
 
-  // (2) 일별 통계
   const dailyStats = useMemo(() => {
     return computeDailyStats(rawData, measureColumns, selectedYears, selectedMonth, calcMode);
   }, [rawData, measureColumns, selectedYears, selectedMonth, calcMode]);
 
-  // (3) 시간별 통계
   const hourlyStats = useMemo(() => {
-    return computeHourlyStats(
-      rawData,
-      measureColumns,
-      selectedYears,
-      selectedMonth,
-      selectedDay,
-      calcMode
-    );
+    return computeHourlyStats(rawData, measureColumns, selectedYears, selectedMonth, selectedDay, calcMode);
   }, [rawData, measureColumns, selectedYears, selectedMonth, selectedDay, calcMode]);
 
   // 일수 계산
@@ -88,7 +83,7 @@ export default function TableSection({ csvPath }) {
     return getDaysInMonth(selectedYears, selectedMonth, "max");
   }, [selectedMonth, selectedYears]);
 
-  // 연도 범위 타이틀
+  // UI 표시용
   const yearRangeTitle = useMemo(() => {
     if (!selectedYears.length) return "(연도를 선택해주세요)";
     const minYear = Math.min(...selectedYears.map(Number));

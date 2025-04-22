@@ -1,34 +1,36 @@
 // ./src/components/ChartSection.js
 import React, { useEffect, useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+
 import "@ant-design/v5-patch-for-react-19";
 import { DatePicker, Button } from "antd";
 import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
-import { useDispatch, useSelector } from "react-redux";
 
 import StatsChart from "./StatsChart";
-import { fetchCsvData } from "../store/csvSlice";
+import { fetchTableData } from "../store/csvSlice";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
 
 const { RangePicker } = DatePicker;
 
-export default function ChartSection({ csvPath }) {
+export default function ChartSection({ tableName }) {
   const dispatch = useDispatch();
   const { csvMap, loadingMap, errorMap } = useSelector((state) => state.csv);
 
+  // 테이블 로드
   useEffect(() => {
-    if (csvPath) {
-      dispatch(fetchCsvData(csvPath));
+    if (tableName) {
+      dispatch(fetchTableData(tableName));
     }
-  }, [csvPath, dispatch]);
+  }, [tableName, dispatch]);
 
-  // 로드 결과
-  const rawData = csvMap[csvPath] || []; 
-  const loading = loadingMap[csvPath] || false; 
-  const error = errorMap[csvPath] || null;
+  // Redux Store에서 로딩 상태 / 에러 / 데이터 가져오기
+  const rawData = csvMap[tableName] || [];
+  const loading = loadingMap[tableName] || false;
+  const error = errorMap[tableName] || null;
 
   // 기간 필터
   const defaultStart = dayjs().subtract(6, "day");
@@ -39,7 +41,7 @@ export default function ChartSection({ csvPath }) {
   // 차트 표시 여부
   const [showChart, setShowChart] = useState(true);
 
-  // rawData 필터링
+  // 날짜 범위 필터링
   const filteredData = useMemo(() => {
     if (!rawData.length) return [];
     const start = dayjs(startDate);
@@ -52,28 +54,27 @@ export default function ChartSection({ csvPath }) {
     });
   }, [rawData, startDate, endDate]);
 
-  // 차트 데이터 준비
+  // 차트 데이터 생성
   const { chartCategories, chartSeries } = useMemo(() => {
     if (!filteredData.length) {
       return { chartCategories: [], chartSeries: [] };
     }
-    // 1) 시간 오름차순 정렬
-    const sorted = [...filteredData].sort((a, b) => {
-      return new Date(a.datetime).getTime() - new Date(b.datetime).getTime();
-    });
-    // 2) x축
-    const categories = sorted.map((item) => dayjs(item.datetime).format("MM-DD HH:mm"));
-    // 3) 모든 측정 컬럼명 추출 (datetime 제외)
+
+    const sorted = [...filteredData].sort(
+      (a, b) => new Date(a.datetime) - new Date(b.datetime)
+    );
+    const categories = sorted.map((row) => dayjs(row.datetime).format("MM-DD HH:mm"));
+    // 측정 컬럼
     const measureCols = Object.keys(sorted[0]).filter((k) => k !== "datetime");
-    // 4) series 생성
-    const series = measureCols.map((col) => {
-      const dataArr = sorted.map((item) => {
-        const val = item[col];
+    const seriesArr = measureCols.map((col) => {
+      const dataArr = sorted.map((row) => {
+        const val = row[col];
         return typeof val === "number" ? +val.toFixed(2) : null;
       });
       return { name: col, data: dataArr };
     });
-    return { chartCategories: categories, chartSeries: series };
+
+    return { chartCategories: categories, chartSeries: seriesArr };
   }, [filteredData]);
 
   return (

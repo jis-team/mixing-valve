@@ -1,34 +1,37 @@
 // ./src/components/SummaryTableSection.js
 import React, { useEffect, useState, useMemo } from "react";
-import { Table, DatePicker, Radio } from "antd";
 import { useDispatch, useSelector } from "react-redux";
+
+import "@ant-design/v5-patch-for-react-19";
+import { Table, DatePicker, Radio } from "antd";
 import dayjs from "dayjs";
-import { fetchCsvData } from "../store/csvSlice";
+
+import { fetchTableData } from "../store/csvSlice";
 import { computeYearMonthDayStats } from "../utils/calcStats";
 
-export default function SummaryTableSection({ csvPaths = [] }) {
+export default function SummaryTableSection({ tableNames = [] }) {
   const dispatch = useDispatch();
   const { csvMap, loadingMap, errorMap } = useSelector((state) => state.csv);
 
   const [selectedDate, setSelectedDate] = useState(dayjs());
   const [calcMode, setCalcMode] = useState("sum");
 
-  // CSV 로드
+  // 여러 테이블 로드
   useEffect(() => {
-    csvPaths.forEach((path) => {
-      dispatch(fetchCsvData(path));
+    tableNames.forEach((tblName) => {
+      dispatch(fetchTableData(tblName));
     });
-  }, [csvPaths, dispatch]);
+  }, [tableNames, dispatch]);
 
-  // 로딩/에러
-  const loading = csvPaths.some((p) => loadingMap[p]);
-  const errorMsg = csvPaths.map((p) => errorMap[p]).filter(Boolean).join(" / ") || null;
+  const loading = tableNames.some((tn) => loadingMap[tn]);
+  const errorMsg = tableNames.map((tn) => errorMap[tn]).filter(Boolean).join(" / ") || null;
 
-  // “마지막 열”만 추출한 배열
+  // “마지막 열”만 추출
+  // measureDataArr = [ { measureName, data: [{datetime, value}, ...]}, ... ]
   const measureDataArr = useMemo(() => {
     const result = [];
-    for (let path of csvPaths) {
-      const arr = csvMap[path] || [];
+    for (let tblName of tableNames) {
+      const arr = csvMap[tblName] || [];
       if (!arr.length) continue;
 
       const headers = Object.keys(arr[0]);
@@ -48,9 +51,9 @@ export default function SummaryTableSection({ csvPaths = [] }) {
       });
     }
     return result;
-  }, [csvMap, csvPaths]);
+  }, [tableNames, csvMap]);
 
-  // (연/월/일) 통계 계산
+  // 연/월/일 통계
   const summaryResult = useMemo(() => {
     const res = {};
     measureDataArr.forEach((mObj) => {
@@ -65,13 +68,22 @@ export default function SummaryTableSection({ csvPaths = [] }) {
     return res;
   }, [measureDataArr, selectedDate, calcMode]);
 
-  // 테이블 데이터: 연/월/일 행 3개
+  // 테이블 데이터
   const tableData = useMemo(() => {
     const measureNames = measureDataArr.map((m) => m.measureName);
 
-    const rowYear = { key: "year", note: calcMode === "sum" ? "연 합계" : "연 평균" };
-    const rowMonth = { key: "month", note: calcMode === "sum" ? "월 합계" : "월 평균" };
-    const rowDay = { key: "day", note: calcMode === "sum" ? "일 합계" : "일 평균" };
+    const rowYear = {
+      key: "year",
+      note: calcMode === "sum" ? "연 합계" : "연 평균",
+    };
+    const rowMonth = {
+      key: "month",
+      note: calcMode === "sum" ? "월 합계" : "월 평균",
+    };
+    const rowDay = {
+      key: "day",
+      note: calcMode === "sum" ? "일 합계" : "일 평균",
+    };
 
     measureNames.forEach((mn) => {
       const yVal = summaryResult[mn]?.yearVal;
