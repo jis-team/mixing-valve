@@ -37,6 +37,8 @@ export default function DashboardPage() {
     { label: "송출량", path: "./data/dummy_data_b.csv" },
     { label: "운용효율", path: "./data/dummy_data_c.csv" },
     { label: "히터라인 운용효율", path: "./data/dummy_data_d.csv" },
+    { label: "라인별 동작시간", path: "./data/dummy_data_e.csv" },
+    { label: "절체라인 추천", path: "./data/dummy_data_i.csv" },
   ]
 
   const tabItems = [
@@ -44,6 +46,8 @@ export default function DashboardPage() {
     { label: dataInfo[1]['label'], key: "b-tab", children: showDetail ? (<DetailPage csvPath={dataInfo[1]['path']} />) : null, },
     { label: dataInfo[2]['label'], key: "c-tab", children: showDetail ? (<DetailPage csvPath={dataInfo[2]['path']} />) : null, },
     { label: dataInfo[3]['label'], key: "d-tab", children: showDetail ? (<DetailPage csvPath={dataInfo[3]['path']} />) : null, },
+    { label: dataInfo[4]['label'], key: "e-tab", children: showDetail ? (<DetailPage csvPath={dataInfo[4]['path']} />) : null, },
+    { label: dataInfo[5]['label'], key: "f-tab", children: showDetail ? (<DetailPage csvPath={dataInfo[5]['path']} />) : null, },
   ];
 
   const csvPaths = dataInfo.map((info) => info.path);
