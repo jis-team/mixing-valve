@@ -2,13 +2,13 @@
 import React, { useEffect, useState, useMemo } from "react";
 import "@ant-design/v5-patch-for-react-19";
 import { DatePicker, Button } from "antd";
-
 import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
+import { useDispatch, useSelector } from "react-redux";
 
 import StatsChart from "./StatsChart";
-import { parseCsv } from "../utils/parseCsv";
+import { fetchCsvData } from "../store/csvSlice";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -16,11 +16,21 @@ dayjs.extend(isSameOrBefore);
 const { RangePicker } = DatePicker;
 
 export default function SummaryChartSection({ csvPaths = [] }) {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [datasets, setDatasets] = useState([]);
+  const dispatch = useDispatch();
+  const { csvMap, loadingMap, errorMap } = useSelector((state) => state.csv);
 
-  // 기간 필터 (디폴트: 최근 7일)
+  // CSV 로드
+  useEffect(() => {
+    csvPaths.forEach((path) => {
+      dispatch(fetchCsvData(path));
+    });
+  }, [csvPaths, dispatch]);
+
+  // 로딩 / 에러
+  const loading = csvPaths.some((p) => loadingMap[p]);
+  const error = csvPaths.map((p) => errorMap[p]).filter(Boolean).join(" / ") || null;
+
+  // 기간 (디폴트 7일)
   const defaultStart = dayjs().subtract(6, "day");
   const defaultEnd = dayjs();
   const [startDate, setStartDate] = useState(defaultStart.format("YYYY-MM-DD"));
@@ -29,46 +39,33 @@ export default function SummaryChartSection({ csvPaths = [] }) {
   // 차트 표시 여부
   const [showChart, setShowChart] = useState(true);
 
-  // CSV 로드 (처음 한 번)
-  useEffect(() => {
-    if (!csvPaths.length) return;
+  // 여러 CSV의 “마지막 열”만 추출
+  const datasets = useMemo(() => {
+    const resultArr = [];
+    for (let path of csvPaths) {
+      const dataArr = csvMap[path] || [];
+      if (!dataArr.length) continue;
 
-    (async () => {
-      setLoading(true);
-      try {
-        const resultArr = [];
-        for (let path of csvPaths) {
-          const csvData = await parseCsv(path);
-          if (!csvData || csvData.length === 0) continue;
-          // 마지막 열 이름
-          const headers = Object.keys(csvData[0]);
-          const lastCol = headers[headers.length - 1];
-          // 해당 열의 데이터만 추출
-          const items = csvData
-            .filter((row) => row.datetime && row[lastCol] != null)
-            .map((row) => ({
-              datetime: row.datetime,
-              value: row[lastCol],
-            }));
-          resultArr.push({
-            measureName: lastCol,
-            data: items,
-          });
-        }
-        setDatasets(resultArr);
-      } catch (err) {
-        console.error(err);
-        setError("CSV 로드 중 오류가 발생했습니다.");
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [csvPaths]);
+      const headers = Object.keys(dataArr[0]);
+      if (headers.length <= 1) continue;
+      const lastCol = headers[headers.length - 1];
 
-  // 기간에 맞게 필터링
+      const filtered = dataArr
+        .filter((row) => row.datetime && row[lastCol] != null)
+        .map((row) => ({
+          datetime: row.datetime,
+          value: row[lastCol],
+        }));
+      resultArr.push({
+        measureName: lastCol,
+        data: filtered,
+      });
+    }
+    return resultArr;
+  }, [csvMap, csvPaths]);
+
+  // 기간 필터링
   const filteredDatasets = useMemo(() => {
-    if (!datasets.length) return [];
-
     const start = dayjs(startDate);
     const end = dayjs(endDate);
 
@@ -77,48 +74,37 @@ export default function SummaryChartSection({ csvPaths = [] }) {
         const dt = dayjs(item.datetime);
         return dt.isValid() && dt.isSameOrAfter(start) && dt.isSameOrBefore(end);
       });
-      return {
-        measureName: ds.measureName,
-        data: filtered,
-      };
+      return { measureName: ds.measureName, data: filtered };
     });
   }, [datasets, startDate, endDate]);
 
+  // 차트 데이터
   const { chartCategories, chartSeries } = useMemo(() => {
-    if (!filteredDatasets || !filteredDatasets.length) {
+    if (!filteredDatasets.length) {
       return { chartCategories: [], chartSeries: [] };
     }
 
-    let allDatetimes = new Set();
+    let allTimes = new Set();
     filteredDatasets.forEach((ds) => {
-      ds.data.forEach((item) => {
-        allDatetimes.add(item.datetime);
-      });
+      ds.data.forEach((item) => allTimes.add(item.datetime));
     });
-    let allTimesSorted = Array.from(allDatetimes).sort(
+    let allTimesSorted = Array.from(allTimes).sort(
       (a, b) => dayjs(a).valueOf() - dayjs(b).valueOf()
     );
 
     const seriesArr = filteredDatasets.map((ds) => {
-      const valueMap = new Map(
-        ds.data.map((item) => [item.datetime, item.value])
-      );
+      const mapVal = new Map(ds.data.map((x) => [x.datetime, x.value]));
       const dataArr = allTimesSorted.map((t) =>
-        valueMap.has(t) ? +valueMap.get(t).toFixed(2) : null
+        mapVal.has(t) ? +mapVal.get(t).toFixed(2) : null
       );
-
-      return {
-        name: ds.measureName,
-        data: dataArr,
-      };
+      return { name: ds.measureName, data: dataArr };
     });
 
-    const categories = allTimesSorted.map((t) => dayjs(t).format("MM-DD HH:mm"));
+    const categories = allTimesSorted.map((t) =>
+      dayjs(t).format("MM-DD HH:mm")
+    );
 
-    return {
-      chartCategories: categories,
-      chartSeries: seriesArr,
-    };
+    return { chartCategories: categories, chartSeries: seriesArr };
   }, [filteredDatasets]);
 
   return (

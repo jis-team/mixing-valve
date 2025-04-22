@@ -1,14 +1,14 @@
 // ./src/components/ChartSection.js
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import "@ant-design/v5-patch-for-react-19";
 import { DatePicker, Button } from "antd";
-
 import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
+import { useDispatch, useSelector } from "react-redux";
 
 import StatsChart from "./StatsChart";
-import useStats from "../hooks/useStats";
+import { fetchCsvData } from "../store/csvSlice";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -16,69 +16,65 @@ dayjs.extend(isSameOrBefore);
 const { RangePicker } = DatePicker;
 
 export default function ChartSection({ csvPath }) {
-  const { 
-    loading, 
-    error, 
-    measureColumns, 
-    rawData 
-  } = useStats(csvPath);
+  const dispatch = useDispatch();
+  const { csvMap, loadingMap, errorMap } = useSelector((state) => state.csv);
 
-  const defaultStart = dayjs().subtract(6, "day"); // 7일 전
-  const defaultEnd = dayjs();                     // 오늘
+  useEffect(() => {
+    if (csvPath) {
+      dispatch(fetchCsvData(csvPath));
+    }
+  }, [csvPath, dispatch]);
 
+  // 로드 결과
+  const rawData = csvMap[csvPath] || []; 
+  const loading = loadingMap[csvPath] || false; 
+  const error = errorMap[csvPath] || null;
+
+  // 기간 필터
+  const defaultStart = dayjs().subtract(6, "day");
+  const defaultEnd = dayjs();
   const [startDate, setStartDate] = useState(defaultStart.format("YYYY-MM-DD"));
   const [endDate, setEndDate] = useState(defaultEnd.format("YYYY-MM-DD"));
 
-  const [selectedMeasures, setSelectedMeasures] = useState([]);
-  useEffect(() => {
-    if (measureColumns.length > 0 && selectedMeasures.length === 0) {
-      setSelectedMeasures(measureColumns);
-    }
-  }, [measureColumns, selectedMeasures]);
-
+  // 차트 표시 여부
   const [showChart, setShowChart] = useState(true);
 
+  // rawData 필터링
   const filteredData = useMemo(() => {
-    if (!rawData || !rawData.length) return [];
+    if (!rawData.length) return [];
     const start = dayjs(startDate);
     const end = dayjs(endDate);
 
     return rawData.filter((item) => {
       if (!item.datetime) return false;
       const dt = dayjs(item.datetime);
-      return dt.isValid() && (dt.isSameOrAfter(start) && dt.isSameOrBefore(end));
+      return dt.isValid() && dt.isSameOrAfter(start) && dt.isSameOrBefore(end);
     });
   }, [rawData, startDate, endDate]);
 
+  // 차트 데이터 준비
   const { chartCategories, chartSeries } = useMemo(() => {
-    if (!filteredData.length || !selectedMeasures.length) {
+    if (!filteredData.length) {
       return { chartCategories: [], chartSeries: [] };
     }
-
-    // 1) 데이터 정렬: datetime 오름차순
+    // 1) 시간 오름차순 정렬
     const sorted = [...filteredData].sort((a, b) => {
-      const tA = new Date(a.datetime).getTime();
-      const tB = new Date(b.datetime).getTime();
-      return tA - tB;
+      return new Date(a.datetime).getTime() - new Date(b.datetime).getTime();
     });
-
-    // 2) x축: 문자열(분 단위)
-    const categories = sorted.map(item => {
-      const dObj = dayjs(item.datetime);
-      return dObj.format("MM-DD HH:mm");
-    });
-
-    // 3) 시리즈: selectedMeasures × sorted.length
-    const series = selectedMeasures.map((col) => {
-      const dataArr = sorted.map(item => {
+    // 2) x축
+    const categories = sorted.map((item) => dayjs(item.datetime).format("MM-DD HH:mm"));
+    // 3) 모든 측정 컬럼명 추출 (datetime 제외)
+    const measureCols = Object.keys(sorted[0]).filter((k) => k !== "datetime");
+    // 4) series 생성
+    const series = measureCols.map((col) => {
+      const dataArr = sorted.map((item) => {
         const val = item[col];
-        return (typeof val === "number") ? +val.toFixed(2) : null;
+        return typeof val === "number" ? +val.toFixed(2) : null;
       });
       return { name: col, data: dataArr };
     });
-
     return { chartCategories: categories, chartSeries: series };
-  }, [filteredData, selectedMeasures]);
+  }, [filteredData]);
 
   return (
     <section className="chart-section">
@@ -99,7 +95,7 @@ export default function ChartSection({ csvPath }) {
           />
         </div>
 
-        <Button onClick={() => setShowChart(prev => !prev)}>
+        <Button onClick={() => setShowChart((prev) => !prev)}>
           {showChart ? "차트 숨기기" : "차트 보기"}
         </Button>
       </div>
