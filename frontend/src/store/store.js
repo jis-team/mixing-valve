@@ -1,10 +1,12 @@
 // store.js 
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./authSlice";
+import csvReducer from "./csvSlice";
 
 const store = configureStore({
   reducer: {
-    auth: authReducer,        // 직접 authReducer를
+    auth: authReducer,
+    csv: csvReducer,
   },
 });
 
