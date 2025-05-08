@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/mixing-valve/static/css/main.faea4399.css",
-    "main.js": "/mixing-valve/static/js/main.d796c0a0.js",
+    "main.js": "/mixing-valve/static/js/main.79b76760.js",
     "static/js/453.8ab44547.chunk.js": "/mixing-valve/static/js/453.8ab44547.chunk.js",
     "index.html": "/mixing-valve/index.html",
     "main.faea4399.css.map": "/mixing-valve/static/css/main.faea4399.css.map",
-    "main.d796c0a0.js.map": "/mixing-valve/static/js/main.d796c0a0.js.map",
+    "main.79b76760.js.map": "/mixing-valve/static/js/main.79b76760.js.map",
     "453.8ab44547.chunk.js.map": "/mixing-valve/static/js/453.8ab44547.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.faea4399.css",
-    "static/js/main.d796c0a0.js"
+    "static/js/main.79b76760.js"
   ]
 }
